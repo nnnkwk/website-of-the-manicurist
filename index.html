@@ -177,19 +177,38 @@
   .burger span{ display:block; width:22px; height:2px; background:var(--ink); margin:5px 0; transition: all .25s var(--ease); }
 
   @media (max-width: 880px){
+    /* Меню вынесено из <header> в разметке нарочно: backdrop-filter на header
+       в Safari создаёт containing block для position:fixed-потомков, и фикс-панель
+       схлопывалась до размеров шапки вместо всего экрана. */
     nav.primary{
-      position: fixed; inset: 66px 0 0 0;
-      background: var(--paper);
-      flex-direction: column; justify-content:flex-start;
-      padding: 40px 24px; gap: 26px;
+      position: fixed; inset: 0;
+      z-index: 200;
+      background: var(--plum);
+      flex-direction: column; justify-content:center;
+      padding: 100px 28px 40px;
       transform: translateX(100%);
       transition: transform .3s var(--ease);
+      box-shadow: -12px 0 30px rgba(0,0,0,0.25);
     }
     nav.primary.open{ transform: translateX(0); }
-    nav.primary a{ font-size: 20px; }
+    nav.primary a{
+      font-size: 24px;
+      color: var(--paper-on-plum);
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(240,231,220,0.12);
+    }
+    nav.primary a::after{ background: var(--brass); }
+    .nav-close{
+      position:absolute; top:22px; right:24px;
+      width:40px; height:40px; border-radius:50%;
+      background:none; border:1px solid rgba(240,231,220,0.3);
+      color: var(--paper-on-plum);
+      display:flex; align-items:center; justify-content:center;
+    }
     .header-actions .btn-primary{ display:none; }
     .burger{ display:block; }
   }
+  .nav-close{ display:none; }
 
   /* ============================================================
      02. HERO
@@ -436,14 +455,6 @@
       </span>
       TAKT
     </a>
-    <nav class="primary" id="primaryNav">
-      <a href="#services">Услуги</a>
-      <a href="#portfolio">Портфолио</a>
-      <a href="#about">Обо мне</a>
-      <a href="#reviews">Отзывы</a>
-      <a href="#faq">FAQ</a>
-      <a href="#contacts">Контакты</a>
-    </nav>
     <div class="header-actions">
       <a href="#booking" class="btn btn-primary">Записаться</a>
       <button class="burger" id="burgerBtn" aria-label="Открыть меню" aria-expanded="false" aria-controls="primaryNav">
@@ -452,6 +463,22 @@
     </div>
   </div>
 </header>
+
+<!-- Вынесено из <header>: backdrop-filter на header в Safari создаёт
+     containing block для fixed-потомков и ломает полноэкранное меню -->
+<nav class="primary" id="primaryNav">
+  <button class="nav-close" id="navCloseBtn" aria-label="Закрыть меню">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6">
+      <path d="M5 5l14 14M19 5L5 19"/>
+    </svg>
+  </button>
+  <a href="#services">Услуги</a>
+  <a href="#portfolio">Портфолио</a>
+  <a href="#about">Обо мне</a>
+  <a href="#reviews">Отзывы</a>
+  <a href="#faq">FAQ</a>
+  <a href="#contacts">Контакты</a>
+</nav>
 
 <!-- ============================================================
      02. HERO
@@ -860,15 +887,15 @@
 <script>
   // Бургер-меню
   const burger = document.getElementById('burgerBtn');
+  const navClose = document.getElementById('navCloseBtn');
   const nav = document.getElementById('primaryNav');
+  const closeNav = () => { nav.classList.remove('open'); burger.setAttribute('aria-expanded', 'false'); };
   burger.addEventListener('click', () => {
     const isOpen = nav.classList.toggle('open');
     burger.setAttribute('aria-expanded', isOpen);
   });
-  nav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
-    nav.classList.remove('open');
-    burger.setAttribute('aria-expanded', 'false');
-  }));
+  navClose.addEventListener('click', closeNav);
+  nav.querySelectorAll('a').forEach(a => a.addEventListener('click', closeNav));
 
   // Универсальный фильтр по рейке оттенков
   function initRailFilter(railId, itemsSelector, allValue){
